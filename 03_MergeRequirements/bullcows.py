@@ -8,3 +8,11 @@ def bullscows(guess: str, secret: str) -> (int, int):
             cows += 1
 
     return bulls, cows
+
+
+def ask(prompt: str, valid: list[str] = None) -> str:
+    guess = input(prompt)
+    if valid and guess not in valid:
+        return ask(prompt, valid)
+    return guess.strip()
+
