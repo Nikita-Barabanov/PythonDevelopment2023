@@ -2,6 +2,14 @@ import random
 import argparse
 import re
 import urllib.request
+import cowsay
+import tempfile
+
+
+smallcow = ['##\n', '## A small cow, artist unknown\n', '##\n', '$eyes = ".." unless ($eyes);\n', '$the_cow = <<EOC;\n',
+            '       $thoughts   ,__,\n', '        $thoughts  ($eyes)____\n', '           (__)    )\\\\\n',
+            '            $tongue||--|| *\n', 'EOC\n']
+
 
 # https://stackoverflow.com/questions/7160737/how-to-validate-a-url-in-python-malformed-or-not
 regex = re.compile(
@@ -25,14 +33,14 @@ def bullscows(guess: str, secret: str) -> (int, int):
 
 
 def ask(prompt: str, valid: list[str] = None) -> str:
-    guess = input(prompt)
+    guess = input(cowsay.cowsay(prompt, cow=random.choice(cowsay.list_cows())))
     while valid and guess not in valid:
-        guess = input(prompt)
+        guess = input(cowsay.cowsay(prompt, cow=random.choice(cowsay.list_cows())))
     return guess.strip()
 
 
 def inform(format_string: str, bulls: int, cows: int) -> None:
-    print(format_string.format(bulls, cows))
+    print(cowsay.cowsay(format_string.format(bulls, cows), cow=random.choice(cowsay.list_cows())))
 
 
 def gameplay(ask: callable, inform: callable, words: list[str]) -> int:
@@ -65,6 +73,9 @@ def main(words: str, length: int = 5) -> None:
 
 
 if __name__ == "__main__":
+    smallcow_file = tempfile.NamedTemporaryFile().name
+    with open(smallcow_file, "w") as scf:
+        scf.writelines(smallcow)
     bullscows_parser = argparse.ArgumentParser(prog="bullscows")
     bullscows_parser.add_argument("words", type=str)
     bullscows_parser.add_argument("length", default=5, type=int, nargs="?")
