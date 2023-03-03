@@ -4,17 +4,27 @@ import cmd
 import readline
 
 
+COWSAY_DEFAULTS = COWTHINK_DEFAULTS = {"-e": (cowsay.Option.eyes, str),
+                                       "-c": ("default", str),
+                                       "-T": (cowsay.Option.tongue, str)}
+
+MAKE_BUBBLE_DEFAULTS = {"-b": ("cowsay", str),
+                        "-d": (40, int),
+                        "-w": (True, bool)}
+
+
 def parse(args):
     return shlex.split(args, comments=True)
 
 
 def get_optional_args(args, default_values):
     i = 0
+    opt_args = {key: val[0] for key, val in default_values.items()}
     while i < len(args):
-        default_values[args[i]] = args[i + 1]
+        opt_args[args[i]] = default_values[args[i]][1](args[i + 1])
         i += 2
 
-    return default_values
+    return opt_args
 
 
 class Cowsayer(cmd.Cmd):
@@ -27,8 +37,8 @@ class Cowsayer(cmd.Cmd):
 
         cow_path: path to the dir with cows
         """
-
-        pass
+        cow_path = parse(args)[0] if parse(args) else cowsay.COW_PEN
+        print(*cowsay.list_cows(cow_path), sep="\n")
 
     def do_make_bubble(self, args):
         """
@@ -41,8 +51,12 @@ class Cowsayer(cmd.Cmd):
         width=40
         wrap_text=True
         """
-
-        pass
+        message, *opt_args = parse(args)
+        opt_args = get_optional_args(opt_args, MAKE_BUBBLE_DEFAULTS)
+        print(cowsay.make_bubble(message,
+                                 brackets=cowsay.THOUGHT_OPTIONS[opt_args["-b"]],
+                                 width=opt_args["-d"],
+                                 wrap_text=opt_args["-w"]))
 
     def do_cowsay(self, args):
         '''
@@ -54,9 +68,9 @@ class Cowsayer(cmd.Cmd):
         eyes: -e or eye_string
         tongue: -T or tongue_string
         '''
-        # message, *opt_args = parse(args)
-        # print(message, get_optional_args(opt_args, {"-e": "oo", "-c": "default", "tongue": "  "}))
-        pass
+        message, *opt_args = parse(args)
+        opt_args = get_optional_args(opt_args, COWSAY_DEFAULTS)
+        print(cowsay.cowsay(message, cow=opt_args["-c"], eyes=opt_args["-e"], tongue=opt_args["-T"]))
 
     def do_cowthink(self, args):
         """
@@ -68,8 +82,9 @@ class Cowsayer(cmd.Cmd):
         eyes: -e or eye_string
         tongue: -T or tongue_string
         """
-
-        pass
+        message, *opt_args = parse(args)
+        opt_args = get_optional_args(opt_args, COWTHINK_DEFAULTS)
+        print(cowsay.cowthink(message, cow=opt_args["-c"], eyes=opt_args["-e"], tongue=opt_args["-T"]))
 
     def do_exit(self, args):
         """Exits from cowsay command line"""
