@@ -4,6 +4,19 @@ import cmd
 import readline
 
 
+def parse(args):
+    return shlex.split(args, comments=True)
+
+
+def get_optional_args(args, default_values):
+    i = 0
+    while i < len(args):
+        default_values[args[i]] = args[i + 1]
+        i += 2
+
+    return default_values
+
+
 class Cowsayer(cmd.Cmd):
     prompt = "(cowsay) "
 
@@ -21,10 +34,10 @@ class Cowsayer(cmd.Cmd):
         """
         Wraps text is wrap_text is true, then pads text and sets inside a bubble.
         This is the text that appears above the cows
-        make_bubble text [brackets] [width] [wrap_text]
+        make_bubble text [-b cowsay | cowthink] [-d width] [-w wrap_text]
 
         text: text in bubble
-        brackets=THOUGHT_OPTIONS['cowsay']
+        brackets=cowsay
         width=40
         wrap_text=True
         """
@@ -34,22 +47,24 @@ class Cowsayer(cmd.Cmd):
     def do_cowsay(self, args):
         '''
         Returns the resulting cowsay string
-        cowsay message [-e eye_string] [-f cowfile] [-T tongue_string]
+        cowsay message [-e eye_string] [-c cow] [-T tongue_string]
 
         message: The message to be displayed
-        cow: -f – the available cows can be found by calling list_cows
+        cow: -c – the available cows can be found by calling list_cows
         eyes: -e or eye_string
         tongue: -T or tongue_string
         '''
+        # message, *opt_args = parse(args)
+        # print(message, get_optional_args(opt_args, {"-e": "oo", "-c": "default", "tongue": "  "}))
         pass
 
     def do_cowthink(self, args):
         """
         Returns the resulting cowthink string
-        cowthink message [-e eye_string] [-f cowfile] [-T tongue_string]
+        cowthink message [-e eye_string] [-c cow] [-T tongue_string]
 
         message: The message to be displayed
-        cow: -f – the available cows can be found by calling list_cows
+        cow: -c – the available cows can be found by calling list_cows
         eyes: -e or eye_string
         tongue: -T or tongue_string
         """
