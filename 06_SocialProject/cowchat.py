@@ -7,6 +7,7 @@ clients = {}
 cows_to_peers = {}
 peers_to_cows = {}
 
+
 async def chat(reader, writer):
     me = "{}:{}".format(*writer.get_extra_info('peername'))
     print(me)
@@ -62,6 +63,7 @@ async def chat(reader, writer):
     del clients[me]
     writer.close()
     await writer.wait_closed()
+
 
 async def main():
     server = await asyncio.start_server(chat, '0.0.0.0', 1337)
