@@ -3,10 +3,11 @@ import cmd
 import socket
 import readline
 import threading
+from copy import copy
 
 
 receiving = True
-
+completion = None
 
 def parse(args):
     return shlex.split(args, comments=True)
@@ -18,13 +19,28 @@ def request(req):
 
 
 def receive(cmdline):
-    global receiving, COWsocket
+    global receiving, COWsocket, completion
     while receiving:
         msg = COWsocket.recv(1024).decode()
         if msg.strip() == "exit":
             break
+        elif msg.startswith("["):
+            completion = eval(msg)
+        else:
+            print(f"\n{msg.strip()}\n{cmdline.prompt}{readline.get_line_buffer()}", end="", flush=True)
 
-        print(f"\n{msg.strip()}\n{cmdline.prompt}{readline.get_line_buffer()}", end="", flush=True)
+
+def complete(text, line, req):
+    global completion
+    if text and len(shlex.split(line)) == 2 or not text and len(shlex.split(line)) == 1:
+        request(f"{req} {text if text else ''}")
+
+    while completion is None:
+        continue
+    comp = copy(completion)
+    completion = None
+
+    return comp
 
 
 class COW(cmd.Cmd):
@@ -37,6 +53,9 @@ class COW(cmd.Cmd):
                 request(f"login {nickname}")
             case _:
                 print("There should be one argument")
+
+    def complete_login(self, text, line, begidx, endidx):
+        return complete(text, line, "complete_login")
 
     def do_who(self, args):
         request("who")
@@ -51,6 +70,9 @@ class COW(cmd.Cmd):
             case _:
                 print("There should be two arguments")
 
+    def complete_say(self, text, line, begidx, endidx):
+        return complete(text, line, "complete_say")
+
     def do_yield(self, args):
         match parse(args):
             case [text, ]:
@@ -59,9 +81,9 @@ class COW(cmd.Cmd):
                 print("There should be one argument")
 
     def do_quit(self, args):
-        global recieving
+        global receiving
         request("quit")
-        recieving = False
+        receiving = False
         return True
 
 
